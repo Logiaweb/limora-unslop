@@ -1,6 +1,6 @@
 ---
 name: limora-unslop
-description: limora-unslop (not the code-polish skill named "unslop" by heydamir) unslops an AI-built app or site with real visuals drawn in Limora and gives it its own visual world. Finds the one true detail about how the product is used, agrees a direction with the user, generates a matching icon set and hero banner with Limora, then rebuilds the screen around those assets so it looks drawn for this product and nobody else. Trigger it when someone wants a design unslopped, says their app looks AI-generated, generic, vibecoded or like every other template, asks for custom icons, illustrations or a hero image, or wants a dashboard, app or landing page to feel designed. Handles React, Tailwind and plain HTML/CSS projects, and can start from a codebase, a website address or an image of the screen. If another skill called unslop is installed and the user names limora-unslop, Limora, or wants icons and a banner drawn, use this one.
+description: limora-unslop (not the code-polish skill named "unslop" by heydamir) unslops an AI-built app or site with real visuals drawn in Limora and gives it its own visual world. Finds the one true detail about how the product is used, agrees a direction with the user, draws every picture the screen needs with Limora (icons, hero, card images, step illustrations, empty states), then rebuilds the screen around those assets so it looks drawn for this product and nobody else. Trigger it when someone wants a design unslopped, says their app looks AI-generated, generic, vibecoded or like every other template, asks for custom icons, illustrations or a hero image, or wants a dashboard, app or landing page to feel designed. Handles React, Tailwind and plain HTML/CSS projects, and can start from a codebase, a website address or an image of the screen. If another skill called unslop is installed and the user names limora-unslop, Limora, or wants icons and a banner drawn, use this one.
 license: MIT
 metadata:
   author: Adrien Ninet
@@ -22,8 +22,8 @@ Call `limora_whoami`.
 - **Connected:** note the credit balance and carry on.
 - **Not connected:** do the reading and direction steps anyway (they are free), then show this message at the start of step 5 and wait:
 
-> The visuals step draws your icons and banner with Limora, an AI image tool for designers.
-> 1. Create a free account: https://limora.ai. New accounts get enough credits for one icon set and one banner.
+> The visuals step draws your screen's pictures with Limora, an AI image tool for designers.
+> 1. Create a free account: https://limora.ai. New accounts get enough credits to start with the icons and the hero.
 > 2. Connect it. In Claude Code, run: `claude mcp add --transport http limora https://app.limora.ai/mcp`. In Claude.ai or Claude Desktop, add a custom connector with the URL `https://app.limora.ai/mcp`.
 > 3. Tell me when it's done and I'll draw your set.
 
@@ -47,7 +47,7 @@ Read what the screen says the product does. Then answer three questions in one l
 - **When and where** they use it. This is usually where the idea is. Bakers work at 3am, so a bakery dashboard can live at night. A travel app is opened in a queue at the airport.
 - **What objects** fill their day. A bakery has a rolling pin, a cargo bike, a bread box and an oven. A design tool has pencils, swatches and a cutting mat.
 
-The objects become the icons. The when and where becomes the banner scene. The idea comes from the product's real life, not from design trends.
+The objects become the icons. The when and where becomes the banner scene, and the other moments of their day become the rest of the pictures. The idea comes from the product's real life, not from design trends.
 
 ## 3. Name what's borrowed
 
@@ -56,12 +56,15 @@ Write down each borrowed part and where it sits on the screen. The usual suspect
 - Icons from a stock icon library, or emoji used as icons.
 - A hero or banner made only of a gradient, glow or blurred blobs.
 - Empty states with nothing in them but grey text.
+- Image areas filled with a gradient, a placeholder or a big emoji: card covers, step illustrations, feature visuals, avatars.
 - Stat cards that are all identical, with no picture or hierarchy.
 - Colors that have nothing to do with the product (purple and blue on a bakery).
 - Copy that could sit on any product ("Supercharge your workflow ✨").
 - Neon glows, gradient text and pulsing dots on things that aren't live.
 
 If the screen is already designed and only a few parts are borrowed, say so, keep its style, and only replace those parts.
+
+Then list the **image slots**: every place on the screen where a real picture would do better than what's there. A landing page often has a dozen (icons, hero, three cards, three steps, an empty state, a footer scene); a phone screen may have three. This list is what step 5 draws, so don't cap it.
 
 ## 4. Agree a direction (stop and wait)
 
@@ -75,15 +78,17 @@ Write three or four directions. Each one is a short block:
 - **Sample icon:** one object, described.
 - **Signature:** a tiny recurring detail that belongs to this business alone (steam curls over anything fresh, a ticket stub for each order).
 
+Under the directions, show the **image plan**: one line per image from your step 3 slots, what it shows, and its cost (usually 4 credits each; an icon sheet counts as one image for up to 6 icons). Give the total and the balance from `limora_whoami`. Put the icon sheet and the hero first, since they carry the most. If the balance doesn't cover everything, say which images fit and let the user choose. The user can remove images or add more here.
+
 Make the directions genuinely different in mood. One safe, one crafted, one playful, and one that comes straight from the insight (the night shift).
 
-Ask the user to pick, using the question tool if you have one. Once they pick, find **one real reference** for the drawing style. Use a Mobbin or Details MCP if one is connected, otherwise describe a well-known product that draws this way. Copy the reference's *approach* (line, shading, color mix, how objects sit on tiles), never its drawings.
+Ask the user to pick a direction and confirm the image plan, using the question tool if you have one. Once they pick, find **one real reference** for the drawing style. Use a Mobbin or Details MCP if one is connected, otherwise describe a well-known product that draws this way. Copy the reference's *approach* (line, shading, color mix, how objects sit on tiles), never its drawings.
 
-Don't skip this stop unless the user already said "just do it". Changing direction after the images exist costs credits.
+Don't skip this stop unless the user already said "just do it". Changing direction after the images exist costs credits. The confirmed plan is the budget: generate what's in it, and ask before adding anything else.
 
 ## 5. Draw the set with Limora
 
-The core set is two images. Announce the credit cost before each generation, and don't add images on your own. This skill's scripts live in `scripts/` next to this file and run with the same Playwright as the video step (see step 9).
+Draw the confirmed image plan, in its order. Say the running total as you go. This skill's scripts live in `scripts/` next to this file and run with the same Playwright as the video step (see step 9).
 
 1. **Project:** use the user's Limora project for this product if one exists (`limora_list_projects`). Otherwise create one (`limora_create_project`), from the site URL when there is one.
 2. **Icon sheet: pick the right call.**
@@ -94,9 +99,15 @@ The core set is two images. Announce the credit cost before each generation, and
 
    - **Check before showing it:** count the objects and compare the style with the direction (outlines, shading, colors). If either is off, say so when you show it and suggest one `limora_iterate_image` fix (4 credits).
    - While a job runs, its reported settings can lag (a transparent request can show `transparent_background: false`). Trust only the finished job (`limora_get_job`).
-3. **Banner:** one wide image with the scene, the empty side flat and calm enough for a headline, in the same style as the icons.
-4. **Show both to the user** and compare them with the reference out loud: outline, shadow, color, count. Suggest at most one fix per image and run it with `limora_iterate_image` only if the user says yes. Never call `limora_generate_image` again to fix an image you already have.
-5. **Split the icons.**
+3. **Hero:** one wide image with the scene, the empty side flat and calm enough for a headline, in the same style as the icons.
+4. **Approve the style before the rest.** Show the icon sheet and the hero, and compare them with the reference out loud: outline, shadow, color, count. Suggest at most one fix per image and run it with `limora_iterate_image` only if the user says yes. Never call `limora_generate_image` again to fix an image you already have. Don't start the rest of the plan until these two are approved, so a wrong style is caught after 2 images, not 12.
+5. **The rest of the plan:** card images, step illustrations, empty states, feature visuals, avatars. One `limora_generate_image` each (with `new_image: true`, since each one is a separate picture). To keep the set one family:
+   - Pass the approved hero as `reference: { asset_id }`, and repeat the same style sentence from the icon prompt word for word.
+   - Use the same aspect ratio for every image of the same kind (all three cards `4:3`, all steps `1:1`), so the layout lines up.
+   - Make each picture show something different from that part of the product's day, never the hero again with small changes. Three trip cards are three different places; three steps are three different moments.
+   - Spot pictures that sit on the page (steps, empty states) usually want `transparent_background: true`; covers and scenes that fill a frame don't.
+   - Check each one against the hero before moving on. If one drifts, one `limora_iterate_image` fix, then carry on.
+6. **Split the icons.**
    - A sheet made with `asset_type: "icon_set"` and never edited: `limora_split_icon_set` (1 credit).
    - Anything else (a free-prompt sheet, or any sheet after `limora_iterate_image`, which loses the icon_set type and is refused with "Only for icon sets"): download the sheet and cut it locally, for free:
 
@@ -104,7 +115,7 @@ The core set is two images. Announce the credit cost before each generation, and
 
      It finds each object (by transparency, or by the sheet's background color), pads it to a square and writes one PNG per object, top row first. If it reports the wrong count, raise `--merge` when an object came out in pieces, lower it when two objects came out as one.
    - Open every file and check it holds exactly one whole object.
-6. If the icons will sit on colored tiles, they can stay as drawn. If they need to float on any background and the sheet wasn't transparent, use `limora_remove_background`.
+7. If the icons will sit on colored tiles, they can stay as drawn. If they need to float on any background and the sheet wasn't transparent, use `limora_remove_background`.
 
 Store the files next to the app's other images, named after what they show (`orders.png`, `banner.png`).
 
@@ -112,6 +123,7 @@ Store the files next to the app's other images, named after what they show (`ord
 
 Keep the product's features, content and section order. Change how it looks.
 
+- **Every image in its slot:** card covers fill their frame edge to edge, step illustrations sit above their step, the empty-state scene replaces the grey sentence.
 - **Icons everywhere the product names a thing:** the navigation, the stat tiles, the quick actions and the empty states. Spare icons from the set make the best empty states (a rolling pin for "No special orders tomorrow").
 - **Banner on top**, with the headline and at most two buttons on its empty side. Match the background behind it to the banner's empty side exactly, so there's no seam. Image models drift from the hex you asked for, so measure it: `node <skill folder>/scripts/sample-color.mjs banner.png --side left` prints the real hex. Use that one, never the hex from the prompt.
 - **One accent color, taken from the banner.** Use it for the main action and the active state, and nothing else.
@@ -139,7 +151,7 @@ Then report:
 
 - The insight and the chosen direction, in two lines.
 - What replaced each borrowed part.
-- The Limora credits used and the balance left, with a link to the project.
+- Every image drawn, where it went, the Limora credits used and the balance left, with a link to the project.
 - Next ideas the user might want, like a second icon set for settings or an animated banner, with their cost.
 
 ## 9. Make the share video
@@ -149,7 +161,7 @@ To finish, make a short video of the screen fixing itself, made to be posted. Of
 What it shows, in order:
 - **The scan.** A line runs down the old screen and tags 3 to 5 of the worst borrowed parts with purple Limora labels.
 - **The checklist.** One pill per step across the top. Each one ticks as its change lands, and the screen changes in place underneath, with no cut.
-- **The Limora moments.** The icons pop in one after another and the banner wipes open, with a "drawn with Limora" label.
+- **The Limora moments.** The icons pop in one after another, the hero wipes open, and the other pictures (cards, steps, empty states) open in their slots, with a "drawn with Limora" label that counts them.
 - **Before and after:** the old screen holds, then a divider is dragged across to reveal the new one. Then an end card says "Unslopped with limora-unslop".
 
 **Length:** aim for 15 to 25 seconds, the range that works for a post. The render prints the duration. To shorten it: merge steps (5 to 7 is enough), set `pace: 0.8`, give quick steps `hold: 1`, leave out the outro hovers, or set `compare: false` (saves about 6 s).
@@ -159,13 +171,13 @@ How to build it:
 1. **Copy the template.** Copy `video/template.html` from this skill's folder into `limora-unslop-reel/reel.html` in the project, and copy the new assets next to it.
 2. **Put the old screen in.** Paste the original screen's markup inside the `id="screen"` element, with its styles. This is the starting state. Prefix every rule with the screen's root class (`.app .btn`, not `.btn`), so a base rule like `.app a { color: inherit }` can't outrank a button's color and hide its text after the color step.
 3. **Write each step as rules on top.** Each step's id is a word that gets added to `#screen[data-done]` when its pill ticks. Write that step's changes under `[data-done~="<id>"]`. The rules stack, so later steps keep the earlier ones. Change values like padding, colors, sizes, radius and opacity, never the structure, so everything can tween.
-4. **Add the hooks.** These are listed at the top of the template: `data-flag`, `data-gone`, `data-arrive`, `data-reword`, `data-pop`, `data-reveal` and `data-play`. Put `data-pop` on every Limora icon and `data-reveal` on the banner. Keep `data-reword` for lines whose wording is different, eight of them at most.
+4. **Add the hooks.** These are listed at the top of the template: `data-flag`, `data-gone`, `data-arrive`, `data-reword`, `data-pop`, `data-reveal` and `data-play`. Put `data-pop` on every Limora icon and on spot pictures (step illustrations, empty-state scenes), and `data-reveal` on the hero and on every picture that fills a frame (card covers). Group the extra pictures under one or two steps ("Imagery", "Empty states") so the reel stays short; everything tagged with the same step id opens together. Keep `data-reword` for lines whose wording is different, eight of them at most.
 5. **Know what can't tween.** The template's comments show the fix for each:
    - Text going from centered to left-aligned: make the reword a block grid, old text centered, new text left, and tween the container's margin and width.
    - A centered button row going left: keep it `flex-start` and tween its margin-left to 0.
    - An emoji turning into an icon image: center the image with `inset: 0; margin: auto`, never with `left: 50%` and `translateX`, because the pop animation overwrites `transform`.
    - Reworded button labels stay centered on their own (the engine handles it).
-6. **Fill in `window.REEL`.** Use honest counts of what changed. Add `note` on the Limora steps and `focus` on the banner step so the camera pushes in. The `credit` is the user's handle if they gave one.
+6. **Fill in `window.REEL`.** Use honest counts of what changed. Add `note` on the Limora steps with real counts ("9 images drawn with Limora") and `focus` on the hero step so the camera pushes in. The `credit` is the user's handle if they gave one.
 7. **Pick the format.** The default is 1440x1080. For a vertical post, use `size: [1080, 1350]`, and use a screen that's taller than it is wide, or the device will look small. The `limora` theme puts the screen on Limora's indigo background.
 8. **Check the frames.** Run `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html --stills auto --sheet`. It renders the key moments (the scan, each step mid-change, the compare, the end card) at scale 1 into a temp folder and tiles them into one `sheet.png`, so one look checks everything. Fix anything that jumps, overlaps, vanishes or doesn't move. Use `--out-dir` to keep the stills somewhere else, `--play` to watch it live.
 9. **Render.** `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html limora-unslop-reel/unslop.mp4`. Playwright and ffmpeg must be installed. If Playwright is missing but another project on the machine has it, point to that one instead of installing: `PLAYWRIGHT_DIR=/path/to/that/project node …`. Otherwise give the user the one install command the script prints. To change only the sound later, add `--remix unslop.mp4` with a new output name.

@@ -6,18 +6,18 @@
 
 Your AI-built app looks like every other AI-built app. That's because it's made of the same borrowed parts: stock icons, gradient heroes, empty empty states.
 
-Limora Unslop is a free Claude skill that gives your product its own pictures. It finds the one true detail about how your product is used, draws a matching icon set and hero banner with [Limora](https://limora.ai), and rebuilds your screen around them.
+Limora Unslop is a free Claude skill that gives your product its own pictures. It finds the one true detail about how your product is used, draws every picture your screen needs with [Limora](https://limora.ai) (icons, hero, card images, step illustrations, empty states), and rebuilds your screen around them.
 
 By [Adrien Ninet](https://www.instagram.com/adrien.ninet/), designer.
 
-> **Not the same as `unslop`.** There's a popular skill called [unslop](https://github.com/heydamir/unslop) by @heydamir that polishes code: spacing, type, color. **limora-unslop** is a different skill. It draws your product its own icons and banner with Limora, then rebuilds the screen around them. If you have both installed, say "use **limora-unslop**" so your agent picks this one.
+> **Not the same as `unslop`.** There's a popular skill called [unslop](https://github.com/heydamir/unslop) by @heydamir that polishes code: spacing, type, color. **limora-unslop** is a different skill. It draws your product's own pictures with Limora, then rebuilds the screen around them. If you have both installed, say "use **limora-unslop**" so your agent picks this one.
 
 ## What it does
 
 1. Reads your screen and finds what's borrowed.
 2. Finds your product's world: who uses it, when, and which objects fill their day.
-3. Gives you 3-4 visual directions to choose from.
-4. Draws 6 custom icons and a hero banner in that style with Limora.
+3. Gives you 3-4 visual directions, plus an image plan: every picture the screen needs, with its cost.
+4. Draws the whole plan in one style with Limora, starting with the icons and the hero so you approve the look first.
 5. Rebuilds the screen around them: quiet UI, one accent, specific copy.
 6. Makes a short video of your screen fixing itself, ready to post.
 
@@ -33,7 +33,7 @@ git clone https://github.com/Logiaweb/limora-unslop ~/.claude/skills/limora-unsl
 
 Then connect Limora for the drawings:
 
-1. Create a free account at [limora.ai](https://limora.ai). New accounts get enough credits for one icon set and one banner.
+1. Create a free account at [limora.ai](https://limora.ai). New accounts get enough credits to start with the icons and the hero.
 2. Run `claude mcp add --transport http limora https://app.limora.ai/mcp`
 
 ## Use it

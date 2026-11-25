@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 (2026-11-25)
+
+- **No more two-image limit.** Step 3 lists every image slot on the screen (icons, hero, card covers, step illustrations, empty states, avatars), and step 4 shows them as an image plan with the cost of each, the total and the balance. The user confirms or trims it at the existing stop. That confirmed plan is the budget.
+- **Style approved before the rest.** The icon sheet and the hero are drawn and approved first. The remaining images follow, each using the approved hero as a reference and the same style sentence, with matching aspect ratios per kind and a different moment of the product's day in each picture.
+- The README and the description now say the skill draws every picture the screen needs.
+
 ## 1.1.0 (2026-11-25)
 
 Fixes from a real run on a vibecoded landing page (Kopa, a finance app for freelancers).
