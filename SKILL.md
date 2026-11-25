@@ -34,6 +34,8 @@ If the user doesn't want Limora, finish steps 6 and 7 with the assets they alrea
 Judge the screen by how it renders, never by reading the code alone.
 
 - **A codebase:** locate the components behind the screen, start the dev server (or open the HTML) and grab a screenshot.
+
+Keep a full-page screenshot of the original at 1440 px wide (`before.png`). Step 10 compares it with the result.
 - **A website address:** download the page into a local HTML copy and do every edit there. Run `limora_preview_website_brand` on the address too, so you start with its logo and colors.
 - **Only an image:** recreate the screen in a single HTML file, matching it as closely as you can. That file becomes your starting point.
 
@@ -192,3 +194,18 @@ How to build it:
 9. **Render.** `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html limora-unslop-reel/unslop.mp4`. Playwright and ffmpeg must be installed. If Playwright is missing but another project on the machine has it, point to that one instead of installing: `PLAYWRIGHT_DIR=/path/to/that/project node …`. Otherwise give the user the one install command the script prints. To change only the sound later, add `--remix unslop.mp4` with a new output name.
 
 The reel file is only for the video. The actual redesign is delivered in the app's normal stack, free of `data-done` rules and hooks.
+
+## 10. Make the before/after page
+
+The last deliverable is a page anyone can open and drag: a compare slider over the two screenshots, Before / After / Side by side views, what changed and what Limora drew. It costs no credits.
+
+1. **Screenshots.** Use the full-page `before.png` from step 1 and take the same of the new screen (`after.png`), both 1440 px wide.
+2. **Data.** Write `limora-unslop-compare/compare.json`:
+   - `title`: the product name. `line`: what the screen is, in a few words ("A vibecoded bakery dashboard").
+   - `steps`: one entry per reel step, with its `label`, `count`, and one plain line on what changed.
+   - `images`: one row per kind of Limora image with its count (icons, hero, card covers, step pictures, empty states).
+   - `limora`: one sentence on what was drawn, and in which direction.
+3. **Build it.** `node <skill folder>/scripts/compare-page.mjs --before before.png --after after.png --data limora-unslop-compare/compare.json --out limora-unslop-compare`. It crops both screenshots to the same height, shrinks them, and writes `page.html` and `index.html`.
+4. **Share it.**
+   - If you can publish Claude artifacts, publish `page.html` with `before` and `after` images as its files, titled "<Product> Unslop", and give the user the link. Tell them it stays private until they share it from its Share menu.
+   - Otherwise, give them `limora-unslop-compare/index.html` to open, or to host anywhere as a static page.

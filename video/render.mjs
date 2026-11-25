@@ -71,6 +71,8 @@ async function main() {
   if (mode === "video" && !ffmpegReady()) stop("The video step needs ffmpeg. On a Mac: brew install ffmpeg");
 
   const fps = Number(options.fps || 60), scale = Number(options.scale || (mode === "stills" ? 1 : 2));
+  const reelSource = readFileSync(path.resolve(reelFile), "utf8");
+  if (/\btheme\s*:/.test(reelSource)) console.log('Note: REEL.theme is no longer used (removed in 1.3.1). Every reel renders on the light grey stage; delete the "theme" line from the reel file.');
   const browser = await openBrowser(mode === "play");
   const tab = await browser.newPage({ viewport: { width: 2400, height: 2400 }, deviceScaleFactor: mode === "play" ? 1 : scale });
 

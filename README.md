@@ -20,6 +20,7 @@ By [Adrien Ninet](https://www.instagram.com/adrien.ninet/), designer.
 4. Draws the whole plan in one style with Limora, starting with the icons and the hero so you approve the look first.
 5. Rebuilds the screen around them: quiet UI, one accent, specific copy.
 6. Makes a short video of your screen fixing itself, ready to post.
+7. Builds a before/after page with a drag-to-compare slider, to share the result.
 
 It handles React, Tailwind and plain HTML/CSS. Start from your code, your website address or a screenshot.
 
@@ -48,7 +49,7 @@ or "Use limora-unslop on my dashboard."
 
 The skill stops once to let you pick a direction, and again before it spends credits.
 
-Helper scripts in `scripts/` are plain Node with nothing to install. They cut an icon sheet into single icons (`split-sheet.mjs`), read the hero's exact edge color (`sample-color.mjs`), and shrink Limora's full-size PNGs for the web (`shrink.mjs`).
+Helper scripts in `scripts/` are plain Node with nothing to install. They cut an icon sheet into single icons (`split-sheet.mjs`), read the hero's exact edge color (`sample-color.mjs`), shrink Limora's full-size PNGs for the web (`shrink.mjs`), and build the before/after page (`compare-page.mjs`).
 
 The video needs Playwright and ffmpeg: `npm i -D playwright && npx playwright install chromium`, and `brew install ffmpeg` on a Mac.
 

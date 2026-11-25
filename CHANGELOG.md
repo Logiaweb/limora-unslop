@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0 (2026-11-26)
+
+- **New step 10: the before/after page.** Every run now ends with a page that has a drag-to-compare slider over the two screenshots (keyboard and touch friendly), Before / After / Side by side views, what changed per step, and what Limora drew. Step 1 now keeps a full-page `before.png` for it.
+- **New `scripts/compare-page.mjs`.** It builds that page from the two screenshots and a small `compare.json`: it crops both to the same height, writes WebP (or PNG), and outputs `page.html` to publish as a Claude artifact and `index.html` to open or host anywhere. Plain Node, nothing to install.
+- **Old theme setting flagged.** The renderer now prints a note when a reel file still sets `theme`, which was removed in 1.3.1, instead of ignoring it silently.
+
 ## 1.3.1 (2026-11-25)
 
 - Removed the indigo "limora" video theme (`theme` option, `--theme` flag, its stars, glow and grain). Every reel now uses the light grey stage.
