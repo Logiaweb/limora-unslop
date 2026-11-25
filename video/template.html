@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>limora-unslop reel</title>
+<!-- Fonts the screen uses, before and after -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* 1. The screen as it was (the slop) */
+.app { font-family: "Inter", sans-serif; background-color: #0b0f1a; color: #e2e8f0; padding: 14px; }
+.app .card { padding: 10px; border-radius: 22px; background-color: #1e1b4b; box-shadow: 0 0 24px rgba(139, 92, 246, .5); }
+.app .icon img { opacity: 0; }
+
+/* 2. Each step adds a word to #screen[data-done]. Write that step's changes under it.
+      Rules stack: after "color", the "spacing" rules still apply. Change values, never structure. */
+[data-done~="spacing"] .card { padding: 24px; }
+[data-done~="color"].app { background-color: #fbf8f3; color: #1f1b16; }
+[data-done~="color"] .card { background-color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+[data-done~="type"].app { font-family: "Figtree", sans-serif; }
+[data-done~="icons"] .icon .emoji { opacity: 0; }
+[data-done~="details"] .card { border-radius: 16px; }
+
+/* 3. Outro states the cursor triggers */
+.app .tile.is-hover { background-color: #fff3e6; }
+.app .tile.is-press { transform: scale(0.97); }
+</style>
+<script>
+window.REEL = {
+  size: [1440, 1080],          // 1440x1080 like the original reel; 1080x1350 for a vertical post
+  screen: [1440, 900],         // the screen's own size in CSS pixels
+  theme: "light",              // or "limora"
+  device: "tablet",            // or "none" for a plain card
+  credit: "@yourhandle",       // small "made by" line; leave "" to hide it
+  steps: [                     // 5 to 9 steps; each id is the word added to data-done
+    { id: "declutter", label: "Declutter", count: 3 },
+    { id: "spacing", label: "Spacing", count: 8 },
+    { id: "color", label: "Color", count: 6 },
+    { id: "copy", label: "Copy", count: 4 },
+    { id: "type", label: "Type", count: 2 },
+    { id: "icons", label: "Icons", count: 6, note: "6 icons drawn with Limora" },
+    { id: "imagery", label: "Imagery", count: 1, focus: ".hero", note: "Banner drawn with Limora" },
+    { id: "details", label: "Details", count: 4 },
+  ],
+  outro: { hover: [".tile:nth-child(1)", ".tile:nth-child(2)", ".tile:nth-child(3)"] },
+};
+</script>
+</head>
+<body>
+<!-- The screen. One root with id="screen". Hooks:
+     data-flag="Emoji icons"        highlighted by the opening scan (3 to 5 of them)
+     data-gone="declutter"          collapses away at that step
+     data-arrive="copy"             fades in at that step (reserve its space)
+     data-reword="copy"             two children: the old text, then the new text
+     data-pop="icons"               pops in one after another (the Limora icons)
+     data-reveal="imagery"          wipes open (the Limora banner)
+     video data-play="imagery"      starts playing at that step -->
+<div id="screen" class="app">
+  <div class="hero" data-flag="Gradient banner">
+    <div class="scene" data-reveal="imagery"><img src="assets/banner.png" alt=""></div>
+    <h1><span data-reword="copy"><span>Welcome back! 👋</span><span>Good morning, Léa.</span></span></h1>
+  </div>
+  <div class="tiles">
+    <div class="tile card"><span class="icon" data-flag="Emoji icons"><i class="emoji">📦</i><img data-pop="icons" src="assets/orders.png" alt=""></span>Orders</div>
+  </div>
+  <div class="card" data-gone="declutter" data-flag="Fake AI tips">🤖 AI Insights ✨</div>
+</div>
+</body>
+</html>
