@@ -31,6 +31,10 @@ Paste this repo's link into Claude Code and ask Claude to install the skill. Or 
 git clone https://github.com/Logiaweb/limora-unslop ~/.claude/skills/limora-unslop
 ```
 
+Then **start a new session**. Skills load when a session starts, so a session that was already open won't see it, and may pick another skill with a similar name instead.
+
+To update: `cd ~/.claude/skills/limora-unslop && git pull`
+
 Then connect Limora for the drawings:
 
 1. Create a free account at [limora.ai](https://limora.ai). New accounts get enough credits to start with the icons and the hero.
@@ -38,11 +42,13 @@ Then connect Limora for the drawings:
 
 ## Use it
 
-> Use limora-unslop on my dashboard.
+> /limora-unslop on my dashboard.
+
+or "Use limora-unslop on my dashboard."
 
 The skill stops once to let you pick a direction, and again before it spends credits.
 
-Helper scripts in `scripts/` cut an icon sheet into single icons (`split-sheet.mjs`) and read a banner's exact background color (`sample-color.mjs`).
+Helper scripts in `scripts/` are plain Node with nothing to install. They cut an icon sheet into single icons (`split-sheet.mjs`), read the hero's exact edge color (`sample-color.mjs`), and shrink Limora's full-size PNGs for the web (`shrink.mjs`).
 
 The video needs Playwright and ffmpeg: `npm i -D playwright && npx playwright install chromium`, and `brew install ffmpeg` on a Mac.
 

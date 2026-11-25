@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url";
 
 const SKILL_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-export function stop(message) { console.error(message); process.exit(1); }
+import { parseArgs, stop } from "./cli.mjs";
+export { parseArgs, stop };
 
 export function findPlaywright() {
   const lookIn = [process.env.PLAYWRIGHT_DIR, process.cwd(), SKILL_ROOT].filter(Boolean);
@@ -30,13 +31,3 @@ export async function openBrowser(visible = false) {
   stop("Playwright found no browser to drive. Run: npx playwright install chromium");
 }
 
-// Simple --flag value parser shared by the scripts.
-export function parseArgs(list, takesValue) {
-  const options = {}, positional = [];
-  for (let i = 0; i < list.length; i++) {
-    if (!list[i].startsWith("--")) { positional.push(list[i]); continue; }
-    const key = list[i].slice(2);
-    options[key] = takesValue.has(key) ? list[++i] : true;
-  }
-  return { options, positional };
-}

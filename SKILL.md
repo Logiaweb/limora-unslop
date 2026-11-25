@@ -88,7 +88,9 @@ Don't skip this stop unless the user already said "just do it". Changing directi
 
 ## 5. Draw the set with Limora
 
-Draw the confirmed image plan, in its order. Say the running total as you go. This skill's scripts live in `scripts/` next to this file and run with the same Playwright as the video step (see step 9).
+Draw the confirmed image plan, in its order. Say the running total as you go. This skill's scripts live in `scripts/` next to this file. They are plain Node with nothing to install, so they run in any project.
+
+**Waiting for images.** A generation takes about 1 to 2 minutes. `limora_generate_image` returns either the finished image or a job; poll a job with `limora_get_job` about every 30 seconds. Start every image of a batch before polling: the queue runs 4 at a time on Starter and 8 on Pro, so a batch of 8 takes about as long as one. Don't script a sleep loop (many hosts block it); keep working on the page between checks, or simply call `limora_get_job` again.
 
 1. **Project:** use the user's Limora project for this product if one exists (`limora_list_projects`). Otherwise create one (`limora_create_project`), from the site URL when there is one.
 2. **Icon sheet: pick the right call.**
@@ -97,27 +99,32 @@ Draw the confirmed image plan, in its order. Say the running total as you go. Th
 
      > A sprite sheet of exactly 6 separate objects in a 3 by 2 grid, with wide empty space around each one, nothing touching and nothing cropped: 1) …, 2) …, 3) …, 4) …, 5) …, 6) …. Style: (the direction's drawing line, e.g. soft matte clay 3D, rounded shapes, no outlines). Same light from the top left, same camera angle and the same size for every object. No text, no labels, no frames, no ground, no background scene.
 
-   - **Check before showing it:** count the objects and compare the style with the direction (outlines, shading, colors). If either is off, say so when you show it and suggest one `limora_iterate_image` fix (4 credits).
+   - **Check before showing it:** count the objects and compare the style with the direction (outlines, shading, colors). If either is off, show it, say what's wrong, and ask before running a `limora_iterate_image` fix (4 credits). Fixes are outside the confirmed plan, so they always need a yes.
    - While a job runs, its reported settings can lag (a transparent request can show `transparent_background: false`). Trust only the finished job (`limora_get_job`).
 3. **Hero:** one wide image with the scene, the empty side flat and calm enough for a headline, in the same style as the icons.
 4. **Approve the style before the rest.** Show the icon sheet and the hero, and compare them with the reference out loud: outline, shadow, color, count. Suggest at most one fix per image and run it with `limora_iterate_image` only if the user says yes. Never call `limora_generate_image` again to fix an image you already have. Don't start the rest of the plan until these two are approved, so a wrong style is caught after 2 images, not 12.
 5. **The rest of the plan:** card images, step illustrations, empty states, feature visuals, avatars. One `limora_generate_image` each (with `new_image: true`, since each one is a separate picture). To keep the set one family:
-   - Pass the approved hero as `reference: { asset_id }`, and repeat the same style sentence from the icon prompt word for word.
-   - Use the same aspect ratio for every image of the same kind (all three cards `4:3`, all steps `1:1`), so the layout lines up.
+   - **Scenes (card covers, other landscapes or rooms): no reference image.** A reference makes the model copy the hero almost as is (the same hut, the same framing) and can bring back the hero's shape instead of the one you asked for. Keep the family through words: repeat the hero's style sentence word for word (medium, light, palette, line), then describe a scene that is clearly different.
+   - **Objects (step pictures, empty states, spot illustrations): the approved icon sheet or hero as `reference: { asset_id }` helps,** because a small object can't copy a whole scene. Still repeat the style sentence.
+   - Set `aspect_ratio` on every call, the same for every image of the same kind (all three cards `4:3`, all steps `1:1`), and check the returned size: if a card came back in the hero's shape, it was copied, so say so.
    - Make each picture show something different from that part of the product's day, never the hero again with small changes. Three trip cards are three different places; three steps are three different moments.
    - Spot pictures that sit on the page (steps, empty states) usually want `transparent_background: true`; covers and scenes that fill a frame don't.
-   - Check each one against the hero before moving on. If one drifts, one `limora_iterate_image` fix, then carry on.
+   - Check each one against the hero before moving on: style, shape, and that it isn't the hero again. If one drifts, show it and ask before a `limora_iterate_image` fix (4 credits): the plan is the budget, and a fix is an addition. In an auto or unattended mode, list the drifted images in the report instead of fixing them on your own.
 6. **Split the icons.**
    - A sheet made with `asset_type: "icon_set"` and never edited: `limora_split_icon_set` (1 credit).
    - Anything else (a free-prompt sheet, or any sheet after `limora_iterate_image`, which loses the icon_set type and is refused with "Only for icon sets"): download the sheet and cut it locally, for free:
 
      `node <skill folder>/scripts/split-sheet.mjs sheet.png assets/icons --names orders,bakes,deliveries,stock,pickups,takings --count 6`
 
-     It finds each object (by transparency, or by the sheet's background color), pads it to a square and writes one PNG per object, top row first. If it reports the wrong count, raise `--merge` when an object came out in pieces, lower it when two objects came out as one.
+     It finds each object (by transparency, or by the sheet's background color), pads it to a square and writes one PNG per object, top row first. With `--count` it tries other merge distances by itself until it finds that many objects, so leave `--merge` out. Only if it still warns, set `--merge` by hand: a fraction of the sheet's width between 0.001 and 0.1 (default 0.02), lower when two objects came out as one, higher when one came out in pieces.
    - Open every file and check it holds exactly one whole object.
 7. If the icons will sit on colored tiles, they can stay as drawn. If they need to float on any background and the sheet wasn't transparent, use `limora_remove_background`.
 
-Store the files next to the app's other images, named after what they show (`orders.png`, `banner.png`).
+Limora returns full-size PNGs of 4 to 7 MB each, so a set of 12 weighs 60 MB or more. Shrink them before they go into the app, and keep the originals out of it:
+
+`node <skill folder>/scripts/shrink.mjs originals/*.png --out-dir public/images --max 1600`
+
+Use `--max 512` for icons, 1200 for cards and step pictures, 2400 for a full-width hero. It writes WebP when `cwebp` is installed and optimized PNG otherwise. Name the files after what they show (`orders.webp`, `hero.webp`).
 
 ## 6. Rebuild the screen around the assets
 
@@ -125,8 +132,10 @@ Keep the product's features, content and section order. Change how it looks.
 
 - **Every image in its slot:** card covers fill their frame edge to edge, step illustrations sit above their step, the empty-state scene replaces the grey sentence.
 - **Icons everywhere the product names a thing:** the navigation, the stat tiles, the quick actions and the empty states. Spare icons from the set make the best empty states (a rolling pin for "No special orders tomorrow").
-- **Banner on top**, with the headline and at most two buttons on its empty side. Match the background behind it to the banner's empty side exactly, so there's no seam. Image models drift from the hex you asked for, so measure it: `node <skill folder>/scripts/sample-color.mjs banner.png --side left` prints the real hex. Use that one, never the hex from the prompt.
-- **One accent color, taken from the banner.** Use it for the main action and the active state, and nothing else.
+- **Banner on top**, with the headline and at most two buttons on its empty side. Measure its empty side, since image models drift from the hex you asked for: `node <skill folder>/scripts/sample-color.mjs hero.png --side left` prints the real hex and says whether that side is flat.
+  - **Flat** (an illustration with a calm empty side): set the background behind the hero to that exact hex, never the one from the prompt, and the seam disappears.
+  - **Not flat** (a photo, a sky, a gradient): no single color can match it. Set the background to the printed hex and fade the image's edge into it with the `mask-image` line the script prints.
+- **One accent color**, from the drawings or from the direction you agreed (its palette or signature, like a trail-marker red). If it doesn't appear in the hero, make sure it shows somewhere in the pictures (the icons, a card) so it doesn't feel pasted on. Use it for the main action and the active state, and nothing else.
 - **Neutrals tinted toward the banner's palette**, not pure grey. Text, borders and cards all come from those tints.
 - **Calm chrome:** no glows, no gradient text, no emoji labels, no pulsing dots unless something is really live. Shadows are soft, or the reference's hard offset shadow, used the same way everywhere.
 - **A spacing scale** of 4, 8, 12, 16, 24, 32, 48 and 64px, and nothing in between.

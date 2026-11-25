@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.3.0 (2026-11-25)
+
+Fixes from the Ridgeway test run (a landing page with 12 image slots).
+
+- **Scenes no longer copy the hero.** Card covers and other scenes are drawn without a reference image: the style travels through the repeated style sentence, and each scene is described as clearly different. A reference is only used for objects (step pictures, empty states), where it can't copy a whole scene. Every call sets `aspect_ratio`, and the agent checks the returned shape.
+- **Fixes always ask first.** A drifted image is shown with what's wrong, and a fix runs only after a yes, since the confirmed plan is the budget. In auto mode, drifted images are listed in the report instead of being fixed.
+- **The scripts need nothing installed.** `split-sheet.mjs` and `sample-color.mjs` now run on plain Node with a built-in PNG reader and writer (`scripts/png.mjs`), with no Playwright. They take 0.1 to 1 second instead of several. Non-PNG input goes through `sips` or `ffmpeg` when available. Only the video renderer still uses Playwright.
+- **`--merge` is safe.** It's checked (a fraction between 0.001 and 0.1, default shown). With `--count`, the splitter searches merge values by itself until it finds that many objects. A large value no longer runs for minutes (summed-area lookup).
+- **Photo heroes.** `sample-color.mjs` tells a flat edge from a photo or gradient. When the edge isn't flat, it prints the `mask-image` fade to use, and step 6 covers both cases.
+- **New `scripts/shrink.mjs`.** It resizes Limora's 4–7 MB PNGs to web sizes and writes WebP when `cwebp` is installed, optimized PNG otherwise. Step 5 gives the sizes per kind (icons 512, cards 1200, hero 2400).
+- **Waiting for jobs.** Step 5 gives typical times (1–2 min), says to poll `limora_get_job` about every 30 s, to start a whole batch before polling (the queue runs 4 or 8 at once), and not to script sleep loops.
+- **The accent can come from the direction.** It can come from the agreed palette or signature (a trail-marker red), as long as it also shows somewhere in the pictures.
+- **Install note.** The README says to start a new session after installing, since an open session won't see the skill and may pick the other `unslop`. It also shows how to update and suggests `/limora-unslop`.
+- Scripts print a plain message on errors instead of a stack trace.
+
 ## 1.2.0 (2026-11-25)
 
 - **No more two-image limit.** Step 3 lists every image slot on the screen (icons, hero, card covers, step illustrations, empty states, avatars), and step 4 shows them as an image plan with the cost of each, the total and the balance. The user confirms or trims it at the existing stop. That confirmed plan is the budget.
