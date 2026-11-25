@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 (2026-11-25)
+
+- Removed the indigo "limora" video theme (`theme` option, `--theme` flag, its stars, glow and grain). Every reel now uses the light grey stage.
+
 ## 1.3.0 (2026-11-25)
 
 Fixes from the Ridgeway test run (a landing page with 12 image slots).

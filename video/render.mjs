@@ -2,7 +2,7 @@
 /**
  * limora-unslop reel renderer.
  *
- *   node render.mjs <reel.html> <out.mp4>   [--size 1440x1080] [--theme light|limora] [--fps 60] [--scale 2] [--mute]
+ *   node render.mjs <reel.html> <out.mp4>   [--size 1440x1080] [--fps 60] [--scale 2] [--mute]
  *   node render.mjs <reel.html> --stills auto --sheet     key moments as PNGs plus one contact sheet (temp folder)
  *   node render.mjs <reel.html> --stills 1,6.5,12 [--out-dir dir] [--sheet]
  *   node render.mjs <reel.html> --play                    opens a window and plays the reel
@@ -23,7 +23,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { openBrowser, parseArgs, stop } from "../scripts/browser.mjs";
 
 const SKILL_VIDEO_DIR = path.dirname(fileURLToPath(import.meta.url));
-const TAKES_VALUE = new Set(["size", "theme", "fps", "scale", "stills", "remix", "out-dir"]);
+const TAKES_VALUE = new Set(["size", "fps", "scale", "stills", "remix", "out-dir"]);
 const TARGET = [15, 25]; // seconds; a social post should land in this range
 
 function ffmpegReady() { return spawnSync("ffmpeg", ["-hide_banner", "-version"]).status === 0; }
@@ -76,7 +76,6 @@ async function main() {
 
   const params = new URLSearchParams();
   if (options.size) params.set("size", options.size);
-  if (options.theme) params.set("theme", options.theme);
   const url = pathToFileURL(path.resolve(reelFile)).href + (params.size ? `?${params}` : "");
   await tab.goto(url, { waitUntil: "networkidle" });
   await tab.addStyleTag({ content: readFileSync(path.join(SKILL_VIDEO_DIR, "reel.css"), "utf8") });

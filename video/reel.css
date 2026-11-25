@@ -119,33 +119,3 @@ a [data-reword], button [data-reword], .btn [data-reword], [role="button"] [data
 .lu-end h2 { margin: 0; font-size: 52px; line-height: 58px; font-weight: 600; letter-spacing: -0.03em; }
 .lu-end h2 span { background: var(--lu-pill); box-shadow: var(--lu-glow); color: #fff; padding: 0 14px; border-radius: 14px; }
 .lu-end p { margin: 14px 0 0; font-size: 22px; line-height: 30px; color: #6b6870; }
-
-/* Limora theme: indigo wash, warm glow from the right, stars and grain */
-.lu-stage.lu-limora { background: #2522cf; color: #fff; }
-.lu-stage.lu-limora .lu-wash { position: absolute; inset: -20%; z-index: 0; filter: blur(40px);
-  background: radial-gradient(55% 75% at 103% 50%, #fffbd6 0%, rgba(255,251,214,.85) 16%, rgba(82,125,196,.9) 40%, rgba(37,34,207,0) 72%),
-              linear-gradient(90deg, #2522cf 0%, #2522cf 45%, #3443cc 70%, #527dc4 88%); }
-.lu-stage.lu-limora .lu-stars { position: absolute; inset: 0; z-index: 0; }
-.lu-stage.lu-limora .lu-stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #d9d9d9; }
-.lu-stage.lu-limora .lu-grain { position: absolute; inset: 0; z-index: 1; opacity: .16; mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E"); }
-.lu-stage.lu-limora .lu-item { color: rgba(255,255,255,.8); }
-.lu-stage.lu-limora .lu-item .lu-num { background: rgba(255,255,255,.12); color: rgba(255,255,255,.85); }
-.lu-stage.lu-limora .lu-item.lu-on { background: #fff; color: #131116; }
-.lu-stage.lu-limora .lu-item.lu-on .lu-num { background: rgba(19,17,22,.08); color: #131116; }
-.lu-stage.lu-limora .lu-device { box-shadow: 0 0 0 2px #2b2b2e, 0 0 0 4px #b9bbc0, 0 0 0 5px #8e9096, 0 50px 100px -20px rgba(8,6,60,.6), 0 20px 40px -20px rgba(8,6,60,.5); }
-.lu-stage.lu-limora .lu-credit { color: rgba(255,255,255,.6); }
-.lu-stage.lu-limora .lu-end p { color: rgba(255,255,255,.75); }
-.lu-stage.lu-limora .lu-end h2 span { color: #fff; }
-
-/* Drag-to-compare divider */
-.lu-after-copy { position: absolute !important; left: 0; top: 0; z-index: 30; }
-.lu-divider { position: absolute; left: 0; top: 0; bottom: 0; z-index: 35; width: 0; opacity: 0; transition: opacity 250ms; }
-.lu-divider.lu-show { opacity: 1; }
-.lu-divider::before { content: ""; position: absolute; top: 0; bottom: 0; left: calc(-2px * var(--lu-inv, 1)); width: calc(4px * var(--lu-inv, 1));
-  background: #fff; box-shadow: 0 0 calc(18px * var(--lu-inv, 1)) rgba(26, 10, 60, 0.35); }
-.lu-knob { position: absolute; top: 50%; left: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%;
-  display: grid; place-items: center; background: #fff; color: #7a3cf0; transform: scale(var(--lu-inv, 1));
-  box-shadow: 0 6px 20px -4px rgba(26, 10, 60, 0.35), 0 0 0 3px rgba(138, 67, 234, 0.25); transition: box-shadow 200ms; }
-.lu-knob svg { width: 26px; height: 26px; }
-.lu-divider.lu-grab .lu-knob { box-shadow: 0 6px 20px -4px rgba(26, 10, 60, 0.35), 0 0 0 6px rgba(138, 67, 234, 0.35); }

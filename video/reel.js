@@ -4,9 +4,8 @@
    render.mjs injects this file; seek(ms) makes every frame reproducible. */
 (() => {
   const q = new URLSearchParams(location.search);
-  const cfg = Object.assign({ theme: "light", size: [1440, 1080], screen: [1440, 900], device: "tablet", steps: [], credit: "", end: {} }, window.REEL || {});
+  const cfg = Object.assign({ size: [1440, 1080], screen: [1440, 900], device: "tablet", steps: [], credit: "", end: {} }, window.REEL || {});
   if (q.get("size")) cfg.size = q.get("size").split("x").map(Number);
-  if (q.get("theme")) cfg.theme = q.get("theme");
   const [W, H] = cfg.size, [SW, SH] = cfg.screen;
 
   // Step icons (24px, stroke). Unknown ids get a plain dot.
@@ -37,16 +36,8 @@
   font.href = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap";
   document.head.appendChild(font);
 
-  const stage = make("div", `lu-stage lu-${cfg.theme}`);
+  const stage = make("div", "lu-stage");
   Object.assign(stage.style, { width: W + "px", height: H + "px" });
-  if (cfg.theme === "limora") {
-    stage.appendChild(make("div", "lu-wash"));
-    const stars = make("div", "lu-stars");
-    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    for (let i = 0; i < 70; i++) { const d = make("i"); Object.assign(d.style, { left: (rnd() * W).toFixed(1) + "px", top: (rnd() * H).toFixed(1) + "px", opacity: (0.25 + rnd() * 0.6).toFixed(2) }); stars.appendChild(d); }
-    stage.appendChild(stars);
-    stage.appendChild(make("div", "lu-grain"));
-  }
   const list = make("div", "lu-list");
   const items = cfg.steps.map((s) => {
     const it = make("div", "lu-item", `<span class="lu-ico">${svg(iconFor(s), "lu-base")}${svg(TICK, "lu-tick", 2)}</span>${s.label}${s.count != null ? `<span class="lu-num">${s.count}</span>` : ""}`);
