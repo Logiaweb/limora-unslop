@@ -4,7 +4,7 @@
 
 **[Watch the demo](https://adrien-ninet.com/unslop)**
 
-Your AI-built app looks like every other AI-built app. That's because it's made of the same borrowed parts: stock icons, gradient heroes, empty empty states.
+Your AI-built app or website looks like every other AI-built projects. That's because it's made of the same borrowed parts: stock icons, gradient heroes, empty empty states.
 
 Limora Unslop is a free Claude skill that gives your product its own pictures. It finds the one true detail about how your product is used, draws every picture your screen needs with [Limora](https://limora.ai) (icons, hero, card images, step illustrations, empty states), and rebuilds your screen around them.
 
