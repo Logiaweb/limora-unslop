@@ -6,7 +6,7 @@
 
 Your AI-built app or website looks like every other AI-built projects. That's because it's made of the same borrowed parts: stock icons, gradient heroes, empty empty states.
 
-Limora Unslop is a free Claude skill that gives your product its own pictures. It finds the one true detail about how your product is used, draws every picture your screen needs with [Limora](https://limora.ai) (icons, hero, card images, step illustrations, empty states), and rebuilds your screen around them.
+Limora Unslop is a free Claude skill that gives your product its own pictures. It finds the one true detail about how your product is used, draws every picture your screen needs with [Limora](https://limora.ai/?utm_source=limora-unslop&utm_medium=github) (icons, hero, card images, step illustrations, empty states), and rebuilds your screen around them.
 
 By [Adrien Ninet](https://www.instagram.com/adrien.ninet/), designer.
 
@@ -39,7 +39,7 @@ To update: `cd ~/.claude/skills/limora-unslop && git pull`
 
 Then connect Limora for the drawings:
 
-1. Create a free account at [limora.ai](https://limora.ai). New accounts get enough credits to start with the icons and the hero.
+1. Create a free account at [limora.ai](https://limora.ai/?utm_source=limora-unslop&utm_medium=github). New accounts get enough credits to start with the icons and the hero.
 2. Run `claude mcp add --transport http limora https://app.limora.ai/mcp`
 
 ## Use it

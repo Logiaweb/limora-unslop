@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1 (2026-11-26)
+
+- **Source-tagged Limora links.** The sign-up link the skill shows (`utm_medium=skill`) and the README's Limora links (`utm_medium=github`) now carry `utm_source=limora-unslop`, so Limora's analytics can tell which sign-ups and sales came from the skill. The links work exactly as before for users.
+
 ## 1.5.0 (2026-11-26)
 
 - **Optional references step at the start.** The skill looks for a connected design-reference tool (Refero, Mobbin, Details or similar), or asks once if the user has one. After it understands the product, it collects 4 to 8 references for the same kind of screen plus 2 or 3 for the key sections, shows them as links, and lets the user keep the ones they like. The kept references then ground the directions (step 4) and the layout and hierarchy of the rebuild (step 6), taking their approach and never their screens or content. Real test runs looked clearly better with references collected first.
