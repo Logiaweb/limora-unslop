@@ -14,13 +14,14 @@ By [Adrien Ninet](https://www.instagram.com/adrien.ninet/), designer.
 
 ## What it does
 
-1. Reads your screen and finds what's borrowed.
-2. Finds your product's world: who uses it, when, and which objects fill their day.
-3. Gives you 3-4 visual directions, plus an image plan: every picture the screen needs, with its cost.
-4. Draws the whole plan in one style with Limora, starting with the icons and the hero so you approve the look first.
-5. Rebuilds the screen around them: quiet UI, one accent, specific copy.
-6. Makes a short video of your screen fixing itself, ready to post.
-7. Builds a before/after page with a drag-to-compare slider, to share the result.
+1. Optionally collects real references first, if you have a reference tool like Refero or Mobbin connected.
+2. Reads your screen and finds what's borrowed.
+3. Finds your product's world: who uses it, when, and which objects fill their day.
+4. Gives you 3-4 visual directions, plus an image plan: every picture the screen needs, with its cost.
+5. Draws the whole plan in one style with Limora, starting with the icons and the hero so you approve the look first.
+6. Rebuilds the screen around them: quiet UI, one accent, specific copy.
+7. Makes a short video of your screen fixing itself, ready to post.
+8. Builds a before/after page with a drag-to-compare slider, to share the result.
 
 It handles React, Tailwind and plain HTML/CSS. Start from your code, your website address or a screenshot.
 

@@ -29,6 +29,18 @@ Call `limora_whoami`.
 
 If the user doesn't want Limora, finish steps 6 and 7 with the assets they already have, and say plainly that the screen will still use generic icons.
 
+## Before you start: references (optional)
+
+Real references make the rebuild clearly better, so ask for them up front.
+
+- **Look for a reference tool** among your connected tools: Refero, Mobbin, Details, or any similar design-reference MCP. If one is connected, say so and use it.
+- **If none is connected, ask once:** "Do you have a design reference tool connected, like Refero or Mobbin? Collecting real references first makes the rebuild noticeably better." If the user says no or skips it, carry on without references.
+- **Collect after step 2**, once you know what the product is and what kind of screen this is. Search for:
+  - 4 to 8 real products in the same space and of the same kind of screen ("freelancer finance landing page", "bakery operations dashboard").
+  - 2 or 3 for each section that matters most on this screen (pricing, feature cards, empty states, onboarding steps).
+- **Show them** as numbered links with one line each on what it does well (layout, hierarchy, how pictures sit in the page, type), and let the user keep the ones they like. Some tools have usage limits, so search with purpose rather than many times.
+- **Use the kept ones:** they feed the directions in step 4 and the layout and hierarchy in step 6. Take their *approach* (section order, spacing rhythm, how images are framed, how much text sits next to a picture), never their screens, copy, logos or illustrations.
+
 ## 1. Get the screen in front of you
 
 Judge the screen by how it renders, never by reading the code alone.
@@ -70,7 +82,7 @@ Then list the **image slots**: every place on the screen where a real picture wo
 
 ## 4. Agree a direction (stop and wait)
 
-Write three or four directions. Each one is a short block:
+Write three or four directions. If you collected references, ground each direction in one or two of them and name which. Each one is a short block:
 
 - **Name:** two words that sound like the product's daily life.
 - **Palette:** page color, two or three illustration colors, and one accent for actions.
@@ -84,7 +96,7 @@ Under the directions, show the **image plan**: one line per image from your step
 
 Make the directions genuinely different in mood. One safe, one crafted, one playful, and one that comes straight from the insight (the night shift).
 
-Ask the user to pick a direction and confirm the image plan, using the question tool if you have one. Once they pick, find **one real reference** for the drawing style. Use a Mobbin or Details MCP if one is connected, otherwise describe a well-known product that draws this way. Copy the reference's *approach* (line, shading, color mix, how objects sit on tiles), never its drawings.
+Ask the user to pick a direction and confirm the image plan, using the question tool if you have one. Once they pick, find **one real reference** for the drawing style: from the references you collected at the start if one fits, otherwise from the reference tool if one is connected, otherwise describe a well-known product that draws this way. Copy the reference's *approach* (line, shading, color mix, how objects sit on tiles), never its drawings.
 
 Don't skip this stop unless the user already said "just do it". Changing direction after the images exist costs credits. The confirmed plan is the budget: generate what's in it, and ask before adding anything else.
 
@@ -130,7 +142,7 @@ Use `--max 512` for icons, 1200 for cards and step pictures, 2400 for a full-wid
 
 ## 6. Rebuild the screen around the assets
 
-Keep the product's features, content and section order. Change how it looks.
+Keep the product's features, content and section order. Change how it looks. If the user kept references at the start, follow their layout and hierarchy approach for each section.
 
 - **Every image in its slot:** card covers fill their frame edge to edge, step illustrations sit above their step, the empty-state scene replaces the grey sentence.
 - **Icons everywhere the product names a thing:** the navigation, the stat tiles, the quick actions and the empty states. Spare icons from the set make the best empty states (a rolling pin for "No special orders tomorrow").
@@ -190,7 +202,7 @@ How to build it:
    - Reworded button labels stay centered on their own (the engine handles it).
 6. **Fill in `window.REEL`.** Use honest counts of what changed. Add `note` on the Limora steps with real counts ("9 images drawn with Limora") and `focus` on the hero step so the camera pushes in. The `credit` is the user's handle if they gave one.
 7. **Pick the format.** The default is 1440x1080. For a vertical post, use `size: [1080, 1350]`, and use a screen that's taller than it is wide, or the device will look small.
-8. **Check the frames.** Run `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html --stills auto --sheet`. It renders the key moments (the scan, each step mid-change, the compare, the end card) at scale 1 into a temp folder and tiles them into one `sheet.png`, so one look checks everything. Fix anything that jumps, overlaps, vanishes or doesn't move. Use `--out-dir` to keep the stills somewhere else, `--play` to watch it live.
+8. **Check the frames.** Run `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html --stills auto --sheet`. It renders the key moments (the scan, each step mid-change, the compare, the end card) at scale 1 into a temp folder and tiles them into one `sheet.png`, so one look checks everything. Fix anything that jumps, overlaps, vanishes or doesn't move. Use `--out-dir` to keep the stills somewhere else, `--play` to see it play in a window.
 9. **Render.** `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html limora-unslop-reel/unslop.mp4`. Playwright and ffmpeg must be installed. If Playwright is missing but another project on the machine has it, point to that one instead of installing: `PLAYWRIGHT_DIR=/path/to/that/project node …`. Otherwise give the user the one install command the script prints. To change only the sound later, add `--remix unslop.mp4` with a new output name.
 
 The reel file is only for the video. The actual redesign is delivered in the app's normal stack, free of `data-done` rules and hooks.
