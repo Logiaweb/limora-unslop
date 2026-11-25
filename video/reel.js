@@ -166,7 +166,8 @@
   function clearFlags() { flagEls.forEach((f) => f.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: "forwards" })); }
 
   // ---------- timeline ----------
-  const T = [], cues = [];
+  const T = [], cues = [], marks = [];
+  const pace = Number(cfg.pace) || 1; // below 1 shortens every default hold
   const at = (t, fn, sound, vol) => { T.push({ t, fn }); if (sound) cues.push({ t: +t.toFixed(3), sound, vol: vol ?? 1 }); };
   let duration = 0, now = 0, stash = [];
 
@@ -177,6 +178,7 @@
       const SCAN = 1.7;
       at(t, () => { scan.style.opacity = 1; scan.animate([{ transform: "translateY(0px)" }, { transform: `translateY(${SH}px)` }], { duration: SCAN * 1000, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" }); }, "sweep", 0.8);
       flags.map((n) => ({ n, y: box(n).y })).sort((a, b) => a.y - b.y).forEach(({ n, y }) => at(t + SCAN * Math.min(1, Math.max(0, y) / SH), () => showFlag(n), "tick", 0.5));
+      marks.push({ t: t + SCAN * 0.85, label: "scan" });
       t += SCAN;
       at(t, () => scan.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: "forwards" }));
       t += 1.1;
@@ -187,13 +189,14 @@
       const focus = s.focus && screen.querySelector(s.focus);
       if (focus) { at(t, () => { chrome(true); camera(focus, s.zoom); }, "sweep", 0.6); t += 0.95; }
       at(t, () => apply(s, i), "tick", 0.9);
+      marks.push({ t: t + 0.55, label: s.label });
       if (s.note) { at(t + 0.2, () => { note.lastChild.textContent = s.note; note.classList.add("lu-show"); credit.classList.add("lu-off"); }, null); }
       const pops = all("data-pop", s.id);
       pops.forEach((n, j) => { at(t + 0.2 + j * 0.11, () => pop(n, 0), "pop", 0.55); });
       if (all("data-reveal", s.id).length) cues.push({ t: t + 0.05, sound: "reveal", vol: 1 });
       const spacing = /spac/i.test(s.id);
       if (spacing) { at(t, () => grid.classList.add("lu-show")); }
-      const hold = s.hold ?? (focus ? 2.6 : spacing ? 1.9 : 1.35) + pops.length * 0.08;
+      const hold = s.hold ?? ((focus ? 2.6 : spacing ? 1.9 : 1.35) + pops.length * 0.08) * pace;
       t += hold;
       if (spacing) at(t - 0.3, () => grid.classList.remove("lu-show"), "ding", 0.35);
       if (s.note) at(t - 0.1, () => { note.classList.remove("lu-show"); if (!focus) credit.classList.remove("lu-off"); });
@@ -216,60 +219,65 @@
       at(t, () => cursor.classList.remove("lu-show"));
     }
 
-    // before / after: hold the old screen, then drag a divider across to reveal the new one
-    const DRAG_EASE = "cubic-bezier(0.7, 0, 0.3, 1)";
-    let after = null, divider = null;
-    at(t, () => {
-      // freeze the finished screen into a copy that will be revealed by the drag
-      effects.forEach((a) => { try { a.commitStyles(); } catch {} });
-      after = screen.cloneNode(true);
-      after.removeAttribute("id"); after.classList.add("lu-after-copy", "lu-snap");
-      after.querySelectorAll("video").forEach((v, i) => { const src = screen.querySelectorAll("video")[i]; const p = playing.find((x) => x.v === src); v.muted = true; v.loop = true; if (p) playing.push({ v, from: p.from }); });
-      after.style.clipPath = "inset(0 100% 0 0)";
-      canvas.insertBefore(after, grid);
-      divider = make("div", "lu-divider", '<span class="lu-knob"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 7-5 5 5 5M15 7l5 5-5 5"/></svg></span>');
-      canvas.insertBefore(divider, grid);
-      // the screen underneath goes back to how it started
-      screen.classList.add("lu-snap");
-      screen.dataset.luDone = screen.dataset.done; screen.dataset.done = "";
-      effects.forEach((a) => held.set(a, 0)); flagEls.forEach((f) => f.remove()); flagEls = [];
-      stash = [...screen.querySelectorAll(".is-hover, .is-picked")].map((n) => [n, n.className]);
-      stash.forEach(([n]) => n.classList.remove("is-hover", "is-picked"));
-      badge.textContent = "Before"; badge.classList.remove("lu-after"); badge.classList.add("lu-show");
-    }, "sweep", 0.4);
-    t += 2.0;
-    const MID = 0.5, at0 = 0.03;
-    const moveTo = (from, to, ms) => {
-      after.animate([{ clipPath: `inset(0 ${(1 - from) * 100}% 0 0)` }, { clipPath: `inset(0 ${(1 - to) * 100}% 0 0)` }], { duration: ms, easing: DRAG_EASE, fill: "forwards" });
-      divider.animate([{ transform: `translateX(${from * SW}px)` }, { transform: `translateX(${to * SW}px)` }], { duration: ms, easing: DRAG_EASE, fill: "forwards" });
-      cursor.style.transitionDuration = ms + "ms, 280ms";
-      cursor.style.transform = `translate(${to * SW + 4}px, ${SH / 2 + 6}px)`;
-    };
-    at(t, () => {
-      divider.classList.add("lu-show");
-      divider.animate([{ transform: `translateX(${at0 * SW}px)` }, { transform: `translateX(${at0 * SW}px)` }], { duration: 1, fill: "forwards" });
-      cursor.style.transitionDuration = "1ms, 280ms";
-      cursor.style.transform = `translate(${at0 * SW + 70}px, ${SH / 2 + 60}px)`;
-      cursor.classList.add("lu-show");
-    });
-    at(t + 0.15, () => { cursor.style.transitionDuration = "450ms, 280ms"; cursor.style.transform = `translate(${at0 * SW + 4}px, ${SH / 2 + 6}px)`; });
-    at(t + 0.65, () => { cursor.classList.add("lu-press"); divider.classList.add("lu-grab"); }, "click", 0.5);
-    t += 0.8;
-    at(t, () => moveTo(at0, MID, 1000), "sweep", 0.35);
-    t += 1.0;
-    at(t, () => { badge.textContent = "After"; badge.classList.add("lu-after"); });
-    t += 0.45;
-    at(t, () => moveTo(MID, 1, 900), "sweep", 0.35);
-    t += 0.95;
-    at(t, () => {
-      cursor.classList.remove("lu-press", "lu-show"); divider.classList.remove("lu-show", "lu-grab");
-      // put the real screen back in its finished state and drop the copy
-      screen.dataset.done = screen.dataset.luDone;
-      effects.forEach((a) => held.set(a, Infinity));
-      stash.forEach(([n, c]) => { n.className = c; });
-    }, "ding", 0.5);
-    at(t + 0.4, () => { if (after) after.remove(); if (divider) divider.remove(); });
-    t += 1.3;
+    // REEL.compare = false skips this part (about 6 s)
+    if (cfg.compare !== false) {
+      // before / after: hold the old screen, then drag a divider across to reveal the new one
+      const DRAG_EASE = "cubic-bezier(0.7, 0, 0.3, 1)";
+      let after = null, divider = null;
+      at(t, () => {
+        // freeze the finished screen into a copy that will be revealed by the drag
+        effects.forEach((a) => { try { a.commitStyles(); } catch {} });
+        after = screen.cloneNode(true);
+        after.removeAttribute("id"); after.classList.add("lu-after-copy", "lu-snap");
+        after.querySelectorAll("video").forEach((v, i) => { const src = screen.querySelectorAll("video")[i]; const p = playing.find((x) => x.v === src); v.muted = true; v.loop = true; if (p) playing.push({ v, from: p.from }); });
+        after.style.clipPath = "inset(0 100% 0 0)";
+        canvas.insertBefore(after, grid);
+        divider = make("div", "lu-divider", '<span class="lu-knob"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 7-5 5 5 5M15 7l5 5-5 5"/></svg></span>');
+        canvas.insertBefore(divider, grid);
+        // the screen underneath goes back to how it started
+        screen.classList.add("lu-snap");
+        screen.dataset.luDone = screen.dataset.done; screen.dataset.done = "";
+        effects.forEach((a) => held.set(a, 0)); flagEls.forEach((f) => f.remove()); flagEls = [];
+        stash = [...screen.querySelectorAll(".is-hover, .is-picked")].map((n) => [n, n.className]);
+        stash.forEach(([n]) => n.classList.remove("is-hover", "is-picked"));
+        badge.textContent = "Before"; badge.classList.remove("lu-after"); badge.classList.add("lu-show");
+      }, "sweep", 0.4);
+      marks.push({ t: t + 1.0, label: "before" });
+      t += 2.0;
+      const MID = 0.5, at0 = 0.03;
+      const moveTo = (from, to, ms) => {
+        after.animate([{ clipPath: `inset(0 ${(1 - from) * 100}% 0 0)` }, { clipPath: `inset(0 ${(1 - to) * 100}% 0 0)` }], { duration: ms, easing: DRAG_EASE, fill: "forwards" });
+        divider.animate([{ transform: `translateX(${from * SW}px)` }, { transform: `translateX(${to * SW}px)` }], { duration: ms, easing: DRAG_EASE, fill: "forwards" });
+        cursor.style.transitionDuration = ms + "ms, 280ms";
+        cursor.style.transform = `translate(${to * SW + 4}px, ${SH / 2 + 6}px)`;
+      };
+      at(t, () => {
+        divider.classList.add("lu-show");
+        divider.animate([{ transform: `translateX(${at0 * SW}px)` }, { transform: `translateX(${at0 * SW}px)` }], { duration: 1, fill: "forwards" });
+        cursor.style.transitionDuration = "1ms, 280ms";
+        cursor.style.transform = `translate(${at0 * SW + 70}px, ${SH / 2 + 60}px)`;
+        cursor.classList.add("lu-show");
+      });
+      at(t + 0.15, () => { cursor.style.transitionDuration = "450ms, 280ms"; cursor.style.transform = `translate(${at0 * SW + 4}px, ${SH / 2 + 6}px)`; });
+      at(t + 0.65, () => { cursor.classList.add("lu-press"); divider.classList.add("lu-grab"); }, "click", 0.5);
+      t += 0.8;
+      at(t, () => moveTo(at0, MID, 1000), "sweep", 0.35);
+      marks.push({ t: t + 1.1, label: "compare" });
+      t += 1.0;
+      at(t, () => { badge.textContent = "After"; badge.classList.add("lu-after"); });
+      t += 0.45;
+      at(t, () => moveTo(MID, 1, 900), "sweep", 0.35);
+      t += 0.95;
+      at(t, () => {
+        cursor.classList.remove("lu-press", "lu-show"); divider.classList.remove("lu-show", "lu-grab");
+        // put the real screen back in its finished state and drop the copy
+        screen.dataset.done = screen.dataset.luDone;
+        effects.forEach((a) => held.set(a, Infinity));
+        stash.forEach(([n, c]) => { n.className = c; });
+      }, "ding", 0.5);
+      at(t + 0.4, () => { if (after) after.remove(); if (divider) divider.remove(); });
+      t += 1.3;
+    }
 
     // end card
     at(t, () => {
@@ -281,6 +289,7 @@
       end.style.top = y + devBox.h * s + gap + "px";
       end.classList.add("lu-show");
     }, "sweep", 0.6);
+    marks.push({ t: t + 2.6, label: "end card" });
     t += 3.0;
     duration = t;
     T.sort((a, b) => a.t - b.t);
@@ -315,7 +324,8 @@
     await Promise.all([...document.querySelectorAll("video")].map((v) => v.readyState >= 1 ? null : new Promise((ok) => v.addEventListener("loadedmetadata", ok, { once: true }))));
     layout(); prepare(); build();
     window.reel.duration = duration;
-    return { duration, cues, size: [W, H] };
+    window.reel.marks = marks;
+    return { duration, cues, marks, size: [W, H] };
   }
   // Real-time playback. hooks.onCue(cue) fires as each sound is due, hooks.onEnd() once at the end.
   function play(hooks = {}) {
@@ -330,7 +340,7 @@
     };
     requestAnimationFrame(loop);
   }
-  window.reel = { ready, seek, play, duration: 0, cues, size: [W, H] };
+  window.reel = { ready, seek, play, duration: 0, cues, marks, size: [W, H] };
 
   // ?live: play on load inside an iframe and report to the parent page (used by the landing page)
   if (q.has("live")) {

@@ -74,6 +74,8 @@ html, body { margin: 0; padding: 0; overflow: hidden; background: #f6f6f4; }
 [data-reword] { display: inline-grid; }
 [data-reword] > * { grid-area: 1 / 1; }
 [data-reword] > :nth-child(2) { opacity: 0; }
+/* In buttons and links the new label is often shorter: keep both centered in the shared width */
+a [data-reword], button [data-reword], .btn [data-reword], [role="button"] [data-reword] { justify-items: center; }
 
 /* Highlighter scan over what's wrong */
 .lu-scan { position: absolute; left: -20px; right: -20px; top: 0; height: 3px; background: var(--lu-mark); opacity: 0; z-index: 40;

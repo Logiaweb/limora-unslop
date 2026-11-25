@@ -3,58 +3,30 @@
  * limora-unslop reel renderer.
  *
  *   node render.mjs <reel.html> <out.mp4>   [--size 1440x1080] [--theme light|limora] [--fps 60] [--scale 2] [--mute]
- *   node render.mjs <reel.html> --stills 1,6.5,12     saves PNG checks next to the reel file
- *   node render.mjs <reel.html> --play                opens a window and plays the reel
- *
- * Requirements: the Playwright package with a Chromium build, and ffmpeg on the PATH.
- * PLAYWRIGHT_DIR=<folder with node_modules> reuses a Playwright that is already installed elsewhere.
+ *   node render.mjs <reel.html> --stills auto --sheet     key moments as PNGs plus one contact sheet (temp folder)
+ *   node render.mjs <reel.html> --stills 1,6.5,12 [--out-dir dir] [--sheet]
+ *   node render.mjs <reel.html> --play                    opens a window and plays the reel
  *   node render.mjs <reel.html> <out.mp4> --remix <old.mp4>   redo only the sound on a finished video
+ *
+ * Stills render at --scale 1 unless you pass --scale; videos at 2 (sharper, slower).
+ * Requirements: the Playwright package with a Chromium build, and ffmpeg on the PATH for videos.
+ * PLAYWRIGHT_DIR=<folder with node_modules> reuses a Playwright that is already installed elsewhere.
  *
  * Frames are streamed straight into ffmpeg. Sound effects come from video/sounds (CC0, credited in the README);
  * the ones without a file there are synthesized by ffmpeg.
  */
 import { spawn, spawnSync } from "node:child_process";
-import { createRequire } from "node:module";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { openBrowser, parseArgs, stop } from "../scripts/browser.mjs";
 
 const SKILL_VIDEO_DIR = path.dirname(fileURLToPath(import.meta.url));
-const TAKES_VALUE = new Set(["size", "theme", "fps", "scale", "stills", "remix"]);
-
-function parseArgs(list) {
-  const options = {}, positional = [];
-  for (let i = 0; i < list.length; i++) {
-    if (!list[i].startsWith("--")) { positional.push(list[i]); continue; }
-    const key = list[i].slice(2);
-    options[key] = TAKES_VALUE.has(key) ? list[++i] : true;
-  }
-  return { options, positional };
-}
-
-function stop(message) { console.error(message); process.exit(1); }
-
-function findPlaywright() {
-  const lookIn = [process.env.PLAYWRIGHT_DIR, process.cwd(), SKILL_VIDEO_DIR].filter(Boolean);
-  const npmGlobal = spawnSync("npm", ["root", "-g"], { encoding: "utf8" });
-  if (npmGlobal.status === 0) lookIn.push(npmGlobal.stdout.trim());
-  const req = createRequire(import.meta.url);
-  for (const pkg of ["playwright-core", "playwright"]) {
-    try { return req(req.resolve(pkg, { paths: lookIn })); } catch { /* keep looking */ }
-  }
-  stop("The video step needs Playwright. Install it in the project with:\n  npm i -D playwright && npx playwright install chromium");
-}
+const TAKES_VALUE = new Set(["size", "theme", "fps", "scale", "stills", "remix", "out-dir"]);
+const TARGET = [15, 25]; // seconds; a social post should land in this range
 
 function ffmpegReady() { return spawnSync("ffmpeg", ["-hide_banner", "-version"]).status === 0; }
-
-async function openBrowser(chromium, visible) {
-  const flags = ["--autoplay-policy=no-user-gesture-required", "--allow-file-access-from-files"];
-  for (const extra of [{}, { channel: "chrome" }, { channel: "msedge" }]) {
-    try { return await chromium.launch({ headless: !visible, args: flags, ...extra }); } catch { /* try the next browser */ }
-  }
-  stop("Playwright found no browser to drive. Run: npx playwright install chromium");
-}
 
 function run(cmd, args, input) {
   const out = spawnSync(cmd, args, { input, stdio: [input ? "pipe" : "ignore", "ignore", "pipe"] });
@@ -92,15 +64,14 @@ function addSound(videoIn, videoOut, cues, scratch) {
 }
 
 async function main() {
-  const { options, positional } = parseArgs(process.argv.slice(2));
+  const { options, positional } = parseArgs(process.argv.slice(2), TAKES_VALUE);
   const [reelFile, outFile] = positional;
   const mode = options.play ? "play" : options.stills ? "stills" : "video";
   if (!reelFile || (mode === "video" && !outFile)) stop("usage: node render.mjs <reel.html> <out.mp4> | --stills 1,5 | --play   (see the top of this file)");
   if (mode === "video" && !ffmpegReady()) stop("The video step needs ffmpeg. On a Mac: brew install ffmpeg");
 
-  const fps = Number(options.fps || 60), scale = Number(options.scale || 2);
-  const { chromium } = findPlaywright();
-  const browser = await openBrowser(chromium, mode === "play");
+  const fps = Number(options.fps || 60), scale = Number(options.scale || (mode === "stills" ? 1 : 2));
+  const browser = await openBrowser(mode === "play");
   const tab = await browser.newPage({ viewport: { width: 2400, height: 2400 }, deviceScaleFactor: mode === "play" ? 1 : scale });
 
   const params = new URLSearchParams();
@@ -114,6 +85,7 @@ async function main() {
   const [width, height] = reel.size;
   await tab.setViewportSize({ width, height });
   console.log(`${width}x${height}, ${reel.duration.toFixed(1)} s, ${reel.cues.length} sounds`);
+  if (reel.duration > TARGET[1]) console.log(`Note: ${reel.duration.toFixed(1)} s is long for a post (aim for ${TARGET[0]}-${TARGET[1]} s). Merge steps, set REEL.pace below 1, give steps a shorter hold, or drop the outro.`);
 
   const seekTo = (seconds) => tab.evaluate((ms) => window.reel.seek(ms), seconds * 1000);
 
@@ -125,15 +97,23 @@ async function main() {
   }
 
   if (mode === "stills") {
-    const wanted = String(options.stills).split(",").map(Number).sort((a, b) => a - b);
+    const auto = String(options.stills) === "auto";
+    const wanted = auto ? reel.marks : String(options.stills).split(",").map((t) => ({ t: Number(t), label: `${t} s` }));
+    wanted.sort((a, b) => a.t - b.t);
+    const dir = path.resolve(options["out-dir"] || mkdtempSync(path.join(tmpdir(), "limora-unslop-stills-")));
+    mkdirSync(dir, { recursive: true });
+    const shots = [];
     let f = 0;
-    for (const sec of wanted) {
-      while (f <= Math.round(sec * fps)) await seekTo(f++ / fps);
-      const png = path.join(path.dirname(path.resolve(reelFile)), `still-${sec}s.png`);
+    for (const m of wanted) {
+      while (f <= Math.round(m.t * fps)) await seekTo(f++ / fps);
+      const png = path.join(dir, `still-${m.t.toFixed(1)}s.png`);
       await tab.screenshot({ path: png });
+      shots.push({ png, label: `${m.t.toFixed(1)} s · ${m.label}` });
       console.log(png);
     }
-    return browser.close();
+    await browser.close();
+    if (options.sheet) console.log(await contactSheet(shots, path.join(dir, "sheet.png"), width / height));
+    return;
   }
 
   const scratch = mkdtempSync(path.join(tmpdir(), "limora-unslop-"));
@@ -165,6 +145,20 @@ async function main() {
   else addSound(silent, target, reel.cues, scratch);
   rmSync(scratch, { recursive: true, force: true });
   console.log(`saved ${target}`);
+}
+
+// Tiles the stills into one labeled image, so every frame can be checked in a single look.
+async function contactSheet(shots, file, ratio) {
+  const cols = Math.min(4, Math.ceil(Math.sqrt(shots.length))), tileW = 480, tileH = Math.round(tileW / ratio);
+  const browser = await openBrowser();
+  const tab = await browser.newPage({ viewport: { width: cols * (tileW + 12) + 12, height: 400 } });
+  const tiles = shots.map((s) => `<figure><img src="data:image/png;base64,${readFileSync(s.png).toString("base64")}"><figcaption>${s.label}</figcaption></figure>`).join("");
+  await tab.setContent(`<style>body{margin:0;padding:12px;background:#e9e9e6;font:13px system-ui;display:grid;grid-template-columns:repeat(${cols},${tileW}px);gap:12px}
+    figure{margin:0}img{display:block;width:${tileW}px;height:${tileH}px;object-fit:cover;border-radius:6px;background:#fff}figcaption{padding:4px 2px;color:#444}</style>${tiles}`);
+  await tab.evaluate(() => Promise.all([...document.images].map((i) => i.decode())));
+  await tab.screenshot({ path: file, fullPage: true });
+  await browser.close();
+  return file;
 }
 
 main().catch((err) => stop(err.stack || String(err)));

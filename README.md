@@ -10,6 +10,8 @@ Limora Unslop is a free Claude skill that gives your product its own pictures. I
 
 By [Adrien Ninet](https://www.instagram.com/adrien.ninet/), designer.
 
+> **Not the same as `unslop`.** There's a popular skill called [unslop](https://github.com/heydamir/unslop) by @heydamir that polishes code: spacing, type, color. **limora-unslop** is a different skill. It draws your product its own icons and banner with Limora, then rebuilds the screen around them. If you have both installed, say "use **limora-unslop**" so your agent picks this one.
+
 ## What it does
 
 1. Reads your screen and finds what's borrowed.
@@ -39,6 +41,8 @@ Then connect Limora for the drawings:
 > Use limora-unslop on my dashboard.
 
 The skill stops once to let you pick a direction, and again before it spends credits.
+
+Helper scripts in `scripts/` cut an icon sheet into single icons (`split-sheet.mjs`) and read a banner's exact background color (`sample-color.mjs`).
 
 The video needs Playwright and ffmpeg: `npm i -D playwright && npx playwright install chromium`, and `brew install ffmpeg` on a Mac.
 

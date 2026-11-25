@@ -6,19 +6,43 @@
 <!-- Fonts the screen uses, before and after -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-/* 1. The screen as it was (the slop) */
+/* 1. The screen as it was (the slop).
+   Prefix every rule with the screen's root class (.app) so all rules start at the same specificity.
+   Pitfall: a base rule like `.app a { color: inherit }` (0,1,1) beats a later `.btn { color: #fff }` (0,1,0),
+   so the button text can vanish after the color step. Write `.app .btn` (0,2,0) instead of `.btn`. */
 .app { font-family: "Inter", sans-serif; background-color: #0b0f1a; color: #e2e8f0; padding: 14px; }
+.app a { color: inherit; text-decoration: none; }
 .app .card { padding: 10px; border-radius: 22px; background-color: #1e1b4b; box-shadow: 0 0 24px rgba(139, 92, 246, .5); }
-.app .icon img { opacity: 0; }
+.app .btn { display: inline-flex; padding: 12px 20px; border-radius: 12px; background-color: #7c3aed; color: #fff; }
+
+/* Emoji that turns into a Limora icon: stack both in one box and center the image with inset + margin auto.
+   Don't center it with left:50% + translateX: the pop animation (data-pop) writes `transform` and wipes it. */
+.app .icon { position: relative; display: block; width: 48px; height: 48px; }
+.app .icon .emoji { position: absolute; inset: 0; display: grid; place-items: center; }
+.app .icon img { position: absolute; inset: 0; margin: auto; width: 100%; height: 100%; object-fit: contain; }
 
 /* 2. Each step adds a word to #screen[data-done]. Write that step's changes under it.
       Rules stack: after "color", the "spacing" rules still apply. Change values, never structure. */
 [data-done~="spacing"] .card { padding: 24px; }
 [data-done~="color"].app { background-color: #fbf8f3; color: #1f1b16; }
 [data-done~="color"] .card { background-color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+[data-done~="color"] .btn { background-color: #1f1b16; color: #fff; }
 [data-done~="type"].app { font-family: "Figtree", sans-serif; }
 [data-done~="icons"] .icon .emoji { opacity: 0; }
 [data-done~="details"] .card { border-radius: 16px; }
+
+/* Things that can't tween, and the trick that works:
+   - Centered text that becomes left-aligned (text-align can't tween). Inside headings and paragraphs make the
+     reword a block grid, keep the old text centered and the new one left, and tween the container instead:
+       .app h1 [data-reword] { display: grid; margin-left: 180px; width: 560px; }
+       .app h1 [data-reword] > :first-child { text-align: center; }
+       .app h1 [data-reword] > :last-child { text-align: left; }
+       [data-done~="copy"] h1 [data-reword] { margin-left: 0; width: 720px; }
+     The blur of the swap hides the jump.
+   - A centered button row that becomes left-aligned (justify-content can't tween). Keep the row flex-start
+     and tween its margin-left from the centered offset down to 0:
+       .app .actions { justify-content: flex-start; margin-left: 210px; }
+       [data-done~="layout"] .actions { margin-left: 0; } */
 
 /* 3. Outro states the cursor triggers */
 .app .tile.is-hover { background-color: #fff3e6; }
@@ -31,23 +55,24 @@ window.REEL = {
   theme: "light",              // or "limora"
   device: "tablet",            // or "none" for a plain card
   credit: "@yourhandle",       // small "made by" line; leave "" to hide it
-  steps: [                     // 5 to 9 steps; each id is the word added to data-done
+  pace: 0.85,                  // below 1 shortens every default hold; 1 is the slowest sensible pace
+  // compare: false,           // skips the before/after drag (about 6 s)
+  steps: [                     // aim for 5 to 7 steps: the whole reel should land between 15 and 25 s
     { id: "declutter", label: "Declutter", count: 3 },
     { id: "spacing", label: "Spacing", count: 8 },
     { id: "color", label: "Color", count: 6 },
     { id: "copy", label: "Copy", count: 4 },
-    { id: "type", label: "Type", count: 2 },
     { id: "icons", label: "Icons", count: 6, note: "6 icons drawn with Limora" },
     { id: "imagery", label: "Imagery", count: 1, focus: ".hero", note: "Banner drawn with Limora" },
-    { id: "details", label: "Details", count: 4 },
+    { id: "details", label: "Details", count: 4, hold: 1 },
   ],
-  outro: { hover: [".tile:nth-child(1)", ".tile:nth-child(2)", ".tile:nth-child(3)"] },
+  // outro: { hover: [".tile:nth-child(1)", ".tile:nth-child(2)"] },   // optional, adds about 2.5 s
 };
 </script>
 </head>
 <body>
 <!-- The screen. One root with id="screen". Hooks:
-     data-flag="Emoji icons"        highlighted by the opening scan (3 to 5 of them)
+     data-flag="Emoji icons"        tagged by the opening scan (3 to 5 of them)
      data-gone="declutter"          collapses away at that step
      data-arrive="copy"             fades in at that step (reserve its space)
      data-reword="copy"             two children: the old text, then the new text
@@ -58,6 +83,7 @@ window.REEL = {
   <div class="hero" data-flag="Gradient banner">
     <div class="scene" data-reveal="imagery"><img src="assets/banner.png" alt=""></div>
     <h1><span data-reword="copy"><span>Welcome back! 👋</span><span>Good morning, Léa.</span></span></h1>
+    <a class="btn" href="#"><span data-reword="copy"><span>Get Started →</span><span>Open orders</span></span></a>
   </div>
   <div class="tiles">
     <div class="tile card"><span class="icon" data-flag="Emoji icons"><i class="emoji">📦</i><img data-pop="icons" src="assets/orders.png" alt=""></span>Orders</div>

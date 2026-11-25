@@ -1,6 +1,6 @@
 ---
 name: limora-unslop
-description: Unslops an AI-built app or site with real visuals and gives it its own visual world. Finds the one true detail about how the product is used, agrees a direction with the user, generates a matching icon set and hero banner with Limora, then rebuilds the screen around those assets so it looks drawn for this product and nobody else. Trigger it when someone wants a design unslopped, says their app looks AI-generated, generic, vibecoded or like every other template, asks for custom icons, illustrations or a hero image, or wants a dashboard, app or landing page to feel designed. Handles React, Tailwind and plain HTML/CSS projects, and can start from a codebase, a website address or an image of the screen.
+description: limora-unslop (not the code-polish skill named "unslop" by heydamir) unslops an AI-built app or site with real visuals drawn in Limora and gives it its own visual world. Finds the one true detail about how the product is used, agrees a direction with the user, generates a matching icon set and hero banner with Limora, then rebuilds the screen around those assets so it looks drawn for this product and nobody else. Trigger it when someone wants a design unslopped, says their app looks AI-generated, generic, vibecoded or like every other template, asks for custom icons, illustrations or a hero image, or wants a dashboard, app or landing page to feel designed. Handles React, Tailwind and plain HTML/CSS projects, and can start from a codebase, a website address or an image of the screen. If another skill called unslop is installed and the user names limora-unslop, Limora, or wants icons and a banner drawn, use this one.
 license: MIT
 metadata:
   author: Adrien Ninet
@@ -83,14 +83,28 @@ Don't skip this stop unless the user already said "just do it". Changing directi
 
 ## 5. Draw the set with Limora
 
-The core set is two images. Announce the credit cost before each generation, and don't add images on your own.
+The core set is two images. Announce the credit cost before each generation, and don't add images on your own. This skill's scripts live in `scripts/` next to this file and run with the same Playwright as the video step (see step 9).
 
 1. **Project:** use the user's Limora project for this product if one exists (`limora_list_projects`). Otherwise create one (`limora_create_project`), from the site URL when there is one.
-2. **Icon set:** one image with **exactly 6 objects**, from step 2, in the chosen style, each on its own with space between them. Write the reference's approach into the prompt: line weight, shading, shadow, color variety.
+2. **Icon sheet: pick the right call.**
+   - `asset_type: "icon_set"` is a template with its own composition and style rules. It is right for flat, line or glyph icons, and it is the only kind `limora_split_icon_set` can cut. It tends to override the count and the style you write.
+   - **For 3D, clay, painted, sketched or illustrated objects, use a free prompt** (no `asset_type`), with `transparent_background: true` and `aspect_ratio: "3:2"`. This prompt pattern holds the count and the style:
+
+     > A sprite sheet of exactly 6 separate objects in a 3 by 2 grid, with wide empty space around each one, nothing touching and nothing cropped: 1) …, 2) …, 3) …, 4) …, 5) …, 6) …. Style: (the direction's drawing line, e.g. soft matte clay 3D, rounded shapes, no outlines). Same light from the top left, same camera angle and the same size for every object. No text, no labels, no frames, no ground, no background scene.
+
+   - **Check before showing it:** count the objects and compare the style with the direction (outlines, shading, colors). If either is off, say so when you show it and suggest one `limora_iterate_image` fix (4 credits).
+   - While a job runs, its reported settings can lag (a transparent request can show `transparent_background: false`). Trust only the finished job (`limora_get_job`).
 3. **Banner:** one wide image with the scene, the empty side flat and calm enough for a headline, in the same style as the icons.
 4. **Show both to the user** and compare them with the reference out loud: outline, shadow, color, count. Suggest at most one fix per image and run it with `limora_iterate_image` only if the user says yes. Never call `limora_generate_image` again to fix an image you already have.
-5. **Split the icons** with `limora_split_icon_set`. Open every file and check it holds exactly one object. If one holds two, cut it locally from the sheet instead.
-6. If the icons will sit on colored tiles, they can stay as drawn. If they need to float on any background, use `limora_remove_background`.
+5. **Split the icons.**
+   - A sheet made with `asset_type: "icon_set"` and never edited: `limora_split_icon_set` (1 credit).
+   - Anything else (a free-prompt sheet, or any sheet after `limora_iterate_image`, which loses the icon_set type and is refused with "Only for icon sets"): download the sheet and cut it locally, for free:
+
+     `node <skill folder>/scripts/split-sheet.mjs sheet.png assets/icons --names orders,bakes,deliveries,stock,pickups,takings --count 6`
+
+     It finds each object (by transparency, or by the sheet's background color), pads it to a square and writes one PNG per object, top row first. If it reports the wrong count, raise `--merge` when an object came out in pieces, lower it when two objects came out as one.
+   - Open every file and check it holds exactly one whole object.
+6. If the icons will sit on colored tiles, they can stay as drawn. If they need to float on any background and the sheet wasn't transparent, use `limora_remove_background`.
 
 Store the files next to the app's other images, named after what they show (`orders.png`, `banner.png`).
 
@@ -99,7 +113,7 @@ Store the files next to the app's other images, named after what they show (`ord
 Keep the product's features, content and section order. Change how it looks.
 
 - **Icons everywhere the product names a thing:** the navigation, the stat tiles, the quick actions and the empty states. Spare icons from the set make the best empty states (a rolling pin for "No special orders tomorrow").
-- **Banner on top**, with the headline and at most two buttons on its empty side. Match the page's background to the banner's empty side exactly, so there's no seam.
+- **Banner on top**, with the headline and at most two buttons on its empty side. Match the background behind it to the banner's empty side exactly, so there's no seam. Image models drift from the hex you asked for, so measure it: `node <skill folder>/scripts/sample-color.mjs banner.png --side left` prints the real hex. Use that one, never the hex from the prompt.
 - **One accent color, taken from the banner.** Use it for the main action and the active state, and nothing else.
 - **Neutrals tinted toward the banner's palette**, not pure grey. Text, borders and cards all come from those tints.
 - **Calm chrome:** no glows, no gradient text, no emoji labels, no pulsing dots unless something is really live. Shadows are soft, or the reference's hard offset shadow, used the same way everywhere.
@@ -133,20 +147,27 @@ Then report:
 To finish, make a short video of the screen fixing itself, made to be posted. Offer it right after the report and build it unless the user says no. It costs no credits.
 
 What it shows, in order:
-- **The scan.** A highlighter line runs down the old screen and tags 3 to 5 of the worst borrowed parts in yellow.
+- **The scan.** A line runs down the old screen and tags 3 to 5 of the worst borrowed parts with purple Limora labels.
 - **The checklist.** One pill per step across the top. Each one ticks as its change lands, and the screen changes in place underneath, with no cut.
-- **The Limora moments.** The icons pop in one after another and the banner wipes open, with a small "drawn with Limora" note above.
-- **A quick before and after**, then an end card that says "Unslopped with limora-unslop".
+- **The Limora moments.** The icons pop in one after another and the banner wipes open, with a "drawn with Limora" label.
+- **Before and after:** the old screen holds, then a divider is dragged across to reveal the new one. Then an end card says "Unslopped with limora-unslop".
+
+**Length:** aim for 15 to 25 seconds, the range that works for a post. The render prints the duration. To shorten it: merge steps (5 to 7 is enough), set `pace: 0.8`, give quick steps `hold: 1`, leave out the outro hovers, or set `compare: false` (saves about 6 s).
 
 How to build it:
 
 1. **Copy the template.** Copy `video/template.html` from this skill's folder into `limora-unslop-reel/reel.html` in the project, and copy the new assets next to it.
-2. **Put the old screen in.** Paste the original screen's markup inside the `id="screen"` element, with its styles. This is the starting state.
+2. **Put the old screen in.** Paste the original screen's markup inside the `id="screen"` element, with its styles. This is the starting state. Prefix every rule with the screen's root class (`.app .btn`, not `.btn`), so a base rule like `.app a { color: inherit }` can't outrank a button's color and hide its text after the color step.
 3. **Write each step as rules on top.** Each step's id is a word that gets added to `#screen[data-done]` when its pill ticks. Write that step's changes under `[data-done~="<id>"]`. The rules stack, so later steps keep the earlier ones. Change values like padding, colors, sizes, radius and opacity, never the structure, so everything can tween.
 4. **Add the hooks.** These are listed at the top of the template: `data-flag`, `data-gone`, `data-arrive`, `data-reword`, `data-pop`, `data-reveal` and `data-play`. Put `data-pop` on every Limora icon and `data-reveal` on the banner. Keep `data-reword` for lines whose wording is different, eight of them at most.
-5. **Fill in `window.REEL`.** Use 5 to 9 steps with honest counts of what changed. Add `note` on the Limora steps and `focus` on the banner step so the camera pushes in. The `credit` is the user's handle if they gave one.
-6. **Pick the format.** The default is 1440x1080. For a vertical post, use `size: [1080, 1350]`, and use a screen that's taller than it is wide, or the device will look small. The `limora` theme puts the screen on Limora's indigo background.
-7. **Render.** Run `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html limora-unslop-reel/unslop.mp4`. To check the frames first, add `--stills 2,8,15` instead of the output name, or use `--play` to open a window that plays it. Playwright and ffmpeg must be installed. If one is missing, give the user the one install command the script prints.
-8. **Check the frames before sharing.** Check stills from the scan, one step mid-change, the banner and the end card. Fix anything that jumps, overlaps or doesn't move.
+5. **Know what can't tween.** The template's comments show the fix for each:
+   - Text going from centered to left-aligned: make the reword a block grid, old text centered, new text left, and tween the container's margin and width.
+   - A centered button row going left: keep it `flex-start` and tween its margin-left to 0.
+   - An emoji turning into an icon image: center the image with `inset: 0; margin: auto`, never with `left: 50%` and `translateX`, because the pop animation overwrites `transform`.
+   - Reworded button labels stay centered on their own (the engine handles it).
+6. **Fill in `window.REEL`.** Use honest counts of what changed. Add `note` on the Limora steps and `focus` on the banner step so the camera pushes in. The `credit` is the user's handle if they gave one.
+7. **Pick the format.** The default is 1440x1080. For a vertical post, use `size: [1080, 1350]`, and use a screen that's taller than it is wide, or the device will look small. The `limora` theme puts the screen on Limora's indigo background.
+8. **Check the frames.** Run `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html --stills auto --sheet`. It renders the key moments (the scan, each step mid-change, the compare, the end card) at scale 1 into a temp folder and tiles them into one `sheet.png`, so one look checks everything. Fix anything that jumps, overlaps, vanishes or doesn't move. Use `--out-dir` to keep the stills somewhere else, `--play` to watch it live.
+9. **Render.** `node <skill folder>/video/render.mjs limora-unslop-reel/reel.html limora-unslop-reel/unslop.mp4`. Playwright and ffmpeg must be installed. If Playwright is missing but another project on the machine has it, point to that one instead of installing: `PLAYWRIGHT_DIR=/path/to/that/project node …`. Otherwise give the user the one install command the script prints. To change only the sound later, add `--remix unslop.mp4` with a new output name.
 
 The reel file is only for the video. The actual redesign is delivered in the app's normal stack, free of `data-done` rules and hooks.
