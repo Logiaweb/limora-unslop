@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.2 (2026-11-26)
+
+- **Fixed the Limora MCP address.** It is now `https://limora.ai/mcp` everywhere (the connect command in step "Before you start" and in the README). The old `app.limora.ai/mcp` redirects to the Limora homepage, so connecting with it failed.
+
 ## 1.5.1 (2026-11-26)
 
 - **Source-tagged Limora links.** The sign-up link the skill shows (`utm_medium=skill`) and the README's Limora links (`utm_medium=github`) now carry `utm_source=limora-unslop`, so Limora's analytics can tell which sign-ups and sales came from the skill. The links work exactly as before for users.

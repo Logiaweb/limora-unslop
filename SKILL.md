@@ -24,7 +24,7 @@ Call `limora_whoami`.
 
 > The visuals step draws your screen's pictures with Limora, an AI image tool for designers.
 > 1. Create a free account: https://limora.ai/?utm_source=limora-unslop&utm_medium=skill New accounts get enough credits to start with the icons and the hero.
-> 2. Connect it. In Claude Code, run: `claude mcp add --transport http limora https://app.limora.ai/mcp`. In Claude.ai or Claude Desktop, add a custom connector with the URL `https://app.limora.ai/mcp`.
+> 2. Connect it. In Claude Code, run: `claude mcp add --transport http limora https://limora.ai/mcp`. In Claude.ai or Claude Desktop, add a custom connector with the URL `https://limora.ai/mcp`.
 > 3. Tell me when it's done and I'll draw your set.
 
 If the user doesn't want Limora, finish steps 6 and 7 with the assets they already have, and say plainly that the screen will still use generic icons.

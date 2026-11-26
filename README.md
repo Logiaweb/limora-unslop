@@ -40,7 +40,7 @@ To update: `cd ~/.claude/skills/limora-unslop && git pull`
 Then connect Limora for the drawings:
 
 1. Create a free account at [limora.ai](https://limora.ai/?utm_source=limora-unslop&utm_medium=github). New accounts get enough credits to start with the icons and the hero.
-2. Run `claude mcp add --transport http limora https://app.limora.ai/mcp`
+2. Run `claude mcp add --transport http limora https://limora.ai/mcp`
 
 ## Use it
 
